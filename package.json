@@ -1,0 +1,29 @@
+{
+    "name": "@bienehito/scale-control",
+    "version": "1.0.0",
+    "description": "Scale Control: A Liquid Experience game",
+    "browser": "./src/game.js",
+    "type": "module",
+    "scripts": {
+        "dev": "webpack serve --open",
+        "build": "webpack"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/bienehito/scale-control.git"
+    },
+    "author": "Aleksey Bieneman",
+    "license": "UNLICENSED",
+    "bugs": {
+        "url": "https://github.com/bienehito/scale-control/issues"
+    },
+    "homepage": "https://github.com/bienehito/scale-control#readme",
+    "dependencies": {
+        "@bienehito/fluid-dynamics": "^1.0.0"
+    },
+    "devDependencies": {
+        "copy-webpack-plugin": "^11.0.0",
+        "webpack-cli": "^5.1.4",
+        "webpack-dev-server": "^4.15.1"
+    }
+}

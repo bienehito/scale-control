@@ -1,0 +1,8 @@
+# local-only
+private
+
+# Dependency directories
+node_modules/
+
+# distribution
+dist
