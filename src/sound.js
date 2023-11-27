@@ -60,7 +60,7 @@ export function playMusic() {
     if (!audioCtx) return
     if (muteStates[muteState][1]) return
     const src = `audio/music/${trackList[currentTrack]}`
-    if (musicEl.src != src) {
+    if (!musicEl.src.endsWith(encodeURI(src))) {
         musicEl.src = src
         console.log("Playing", trackList[currentTrack])
     }
