@@ -30,15 +30,15 @@ window.addEventListener("load", function () {
         turnSpeed = 0.04,
         gravity = 20,
         borderBounce = 0.8,
-        gateBottom = 0.6,
-        gateHeight = 0.2,
+        gateBottom = 0.55,
+        gateHeight = 0.25,
         gateScaleStep = 2,
         startBallRadius = 0.03,
         maxBallScale = 5,
-        ballScaleStep = 1.2,
+        ballScaleStepUp = 1.1,
+        ballScaleStepDown = 2,
         startBallPosition = [0.5, 0.25],
         startBallVelocity = [0, 0.20],
-        // startBallVelocity = [-0.25, 0.25],
         numPowerUps = 2,
         powerUpRadius = 10,
         powerUpColors = ["#ff4", "#4f4"],
@@ -387,7 +387,7 @@ window.addEventListener("load", function () {
     function scaleBall(dir) {
         if (!enableBallScale) return
         enableBallScale = false
-        const scaledRadius = ball.radius * Math.pow(ballScaleStep, dir),
+        const scaledRadius = ball.radius * Math.pow(dir > 0 ? ballScaleStepUp : ballScaleStepDown, dir),
             newRadius = Math.max(startBallRadius * baseDim / maxBallScale,
                 Math.min(startBallRadius * baseDim * maxBallScale, scaledRadius)
             )
@@ -535,7 +535,9 @@ window.addEventListener("load", function () {
             const gate = scoringGate(ball)
             if (gate == 0) continue
             powerUp((1 - gate) / 2, ball.text == "+" ? 1 : -1)
-            ball.position = [width * Math.random(), height * Math.random()]
+            // Rewpawn power up avoiding the main ball.
+            do { ball.position = [width * Math.random(), height * Math.random()] }
+            while (vecLen(vecMinus(ball.position, mainBall.position)) < mainBall.radius + ball.radius)
         }
     }
 

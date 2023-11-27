@@ -1,7 +1,7 @@
 // UI text rendering.
 export default function ui(ctx) {
     const notes = [],
-        defaultFont = (w, h) => Math.floor(Math.min(w * 0.04, h * 0.08)) + "px Verdana"
+        defaultFont = (w, h) => Math.floor(Math.min(w * 0.04, h * 0.06)) + "px Verdana"
     return {
         showNote: function (note) {
             note.transparency = 1
