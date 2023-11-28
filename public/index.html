@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,10 +15,30 @@
   </script>
   <script src="game.js"></script>
 </head>
+
 <body>
-  <canvas id="canvas3d">
-    Your browser doesn't support canvas!
-  </canvas>
+  <canvas id="canvas3d">Your browser doesn't support canvas!</canvas>
   <canvas id="canvas2d"></canvas>
+  <div id="help" class="hidden">
+    <div class="popup">
+      <h1>Scale Control: A Liquid Experience</h1>
+      <div><b>Goal:</b> push the white ball into your opponent's gate.</div>
+      <div><b>Ball scales:</b> ball grows when it hits the ceiling and shrinks when it hits the floor.</div>
+      <div><b>Power-ups:</b> push power-up in your opponent's gate to activate:
+        <li><div><span class="plus powerup">+</span></div> makes your jet stronger and your gate wider</li>
+        <li><div><span class="minus powerup">-</span></div> makes your jet weaker and your gate smaller</li>
+      </div>
+      <div><b>Keys:</b>
+        <li><span class="key">Esc</span> this screen</li>
+        <li><span class="key">A</span> <span class="key">W</span> <span class="key">D</span> blue player controls</li>
+        <li><span class="key">←</span> <span class="key">↑</span> <span class="key">→</span> red player controls</li>
+        <li><span class="key">M</span> mute/unmute music and sound effects</li>
+        <li><span class="key">P</span> pause/unpause game</li>
+        <li><span class="key">V</span> cycle through different views</li>
+      </div>
+      <button>Close</button>
+    </div>
+  </div>
 </body>
+
 </html>

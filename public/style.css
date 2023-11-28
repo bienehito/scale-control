@@ -3,13 +3,97 @@ body {
     overflow: hidden;
     background: black;
 }
-#canvas2d, #canvas3d {
+
+#canvas2d,
+#canvas3d,
+#help {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
     height: 100vh;
 }
+
 #canvas2d {
     z-index: 1;
+}
+
+#help {
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#help.hidden {
+    display: none;
+}
+
+.popup {
+    margin: 20px;
+    max-height: 90vh;
+    overflow-y: auto;
+
+    background: #222;
+    border: 2px #ddd solid;
+    border-radius: 40px;
+    padding: 20px;
+    color: #ddd;
+}
+.popup, .popup button {
+    font: 20px 'Satoshi', sans-serif;
+}
+
+.popup h1 {
+    color: #c8c864;
+}
+
+.popup>div {
+    margin-bottom: 25px;
+}
+
+.popup>div>b {
+    color: #96c864;
+}
+
+.popup li {
+    display: flex;
+    margin: 10px 0;
+    gap: 10px;
+    align-items: center;
+}
+
+.popup .powerup {
+    display: block;
+    width: 1.1em;
+    border-radius: 50%;
+    text-align: center;
+    color: #222;
+}
+
+.popup .powerup.plus {
+    background: #ff4;
+}
+
+.popup .powerup.minus {
+    background: #4f4;
+}
+
+.popup .key {
+    border: 1px #aaa solid;
+    border-radius: 7px;
+    padding: 5px;
+    min-width: 1em;
+    text-align: center;
+}
+
+.popup button {
+    display: block;
+    margin: 0 auto;
+    background: #c8af64;
+    padding: 10px 30px;
+    border-radius: 7px;
+    color: #222;
+ 
 }

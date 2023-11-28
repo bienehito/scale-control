@@ -17,6 +17,7 @@ window.addEventListener("load", function () {
             paused: true,
             postRender: update,
         }),
+        helpEl = document.getElementById("help"),
         ui = ui_(ctx)
 
     // Game constants.
@@ -49,7 +50,7 @@ window.addEventListener("load", function () {
 
 
     // Game state variables
-    var state, // main game state: "title", "ready", "play", "score"
+    var state, // main game state: "title", "play", "score"
         enableBallScale // hitting the floor and ceiling will scale ball.
     const players = [
         { // Left player.
@@ -276,13 +277,7 @@ window.addEventListener("load", function () {
         state = "title"
         for (var note of titleNotes)
             ui.showNote(note)
-        setTimeout(toReadyState, 2000)
-    }
-
-    /** Transitions the game to ready to play state. */
-    function toReadyState() {
-        state = "ready"
-        ui.showNote(anyKeyNote)
+        setTimeout(enableAnyKey, 2000)
     }
 
     /** Transitions the game to main play state. */
@@ -296,7 +291,6 @@ window.addEventListener("load", function () {
         for (let i = 0; i < 2; i++)
             ui.hideNote(playerScoreNotes[i])
         ui.hideNote(playerScoreDividerNote)
-        ui.hideNote(anyKeyNote)
         // Show instruction notes if didn't show them before.
         for (let i = 0; i < 2; i++)
             if (instructionNotes[i].transparency == undefined)
@@ -320,10 +314,6 @@ window.addEventListener("load", function () {
             fd.solids.push({
                 position: [width * Math.random(), height * Math.random()],
                 velocity: [0, 0],
-                // position: [width / 2, height / 2 + i * 300],
-                // velocity: [0, -200],
-                // position: [300 + i * 200, 1000],
-                // velocity: [-400, 0],
                 radius: powerUpRadius,
                 density: 2,
                 color: powerUpColors[i % 2],
@@ -348,7 +338,7 @@ window.addEventListener("load", function () {
             stopShooting(i)
         }
         ui.showNote(playerScoreDividerNote)
-        setTimeout(toReadyState, 3000)
+        setTimeout(enableAnyKey, 3000)
     }
 
     /** FPS counter.*/
@@ -563,6 +553,12 @@ window.addEventListener("load", function () {
         }
     }
 
+    // Enable any-key press event.
+    var anyKeyEnabled
+    function enableAnyKey() {
+        anyKeyEnabled = true
+        ui.showNote(anyKeyNote)
+    }
 
     /** Single key press event handlers. */
     window.addEventListener("keydown", evt => {
@@ -598,16 +594,50 @@ window.addEventListener("load", function () {
             nextMuteState(ui)
         }
 
-        // Go to play state on any other key.
-        if (state == "ready") {
-            toPlayState()
+        if (evt.code == "Escape") {
+            toggleHelp()
+        }
+
+        // Any key.
+        if (anyKeyEnabled) {
+            anyKeyEnabled = false
+            ui.hideNote(anyKeyNote)
+            if (state == "score") {
+                toPlayState()
+            } else if (state == "title") {
+                showHelp()
+            }
         }
 
         logActivity()
     })
 
+
+    /** Show/hide help screen. */
+    helpEl.getElementsByTagName("button")[0].addEventListener("click", hideHelp)
+
+    function showHelp() {
+        helpEl.classList.remove("hidden")
+        fd.paused = true
+
+    }
+
+    function hideHelp() {
+        helpEl.classList.add("hidden")
+        if (state == "title")
+            toPlayState()
+        else
+            fd.paused = false
+    }
+
+    function toggleHelp() {
+        if (helpEl.classList.contains("hidden"))
+            showHelp()
+        else
+            hideHelp()
+    }
+
     // Initial game state.
-    // toPlayState()
     toTitleState()
 });
 
