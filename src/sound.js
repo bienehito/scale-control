@@ -24,18 +24,21 @@ const
 
 var
     audioCtx,
+    autoPlayMusic,
     currentTrack = Math.floor(Math.random() * trackList.length),
     muteState = 0
 
 // Starting audio context is only allowed after user has interacted with the page.
 document.addEventListener("keydown", setup)
 document.addEventListener("click", setup)
-function setup() {
+function setup(evt) {
+    if (evt.code == "Escape") return
     document.removeEventListener("keydown", setup)
     document.removeEventListener("click", setup)
     audioCtx = new (window.AudioContext || window.webkitAudioContext)
     musicEl.volume = musicVolume
     musicEl.addEventListener("ended", nextTrack)
+    if (autoPlayMusic) playMusic()
 }
 
 export function nextMuteState(ui) {
@@ -57,7 +60,10 @@ export function pauseMusic() {
 }
 
 export function playMusic() {
-    if (!audioCtx) return
+    if (!audioCtx) {
+        autoPlayMusic = true
+        return
+    }
     if (muteStates[muteState][1]) return
     const src = `audio/music/${trackList[currentTrack]}`
     if (!musicEl.src.endsWith(encodeURI(src))) {
