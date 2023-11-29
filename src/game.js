@@ -13,6 +13,7 @@ window.addEventListener("load", function () {
         fd = new FluidDynamics(gl, {
             velocityDissipation: 0.1,
             dyeDissipation: 0.6,
+            pressureDissipation: 2.0,
             curl: 10,
             paused: true,
             postRender: update,
@@ -22,7 +23,9 @@ window.addEventListener("load", function () {
         isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0)
 
     // Game constants.
-    const weaponLength = 0.02,
+    const 
+        maxSimDim = 1000,
+        weaponLength = 0.02,
         weaponColor = "white",
         forceLength = 0.07,
         forceWidth = 0.02,
@@ -98,6 +101,7 @@ window.addEventListener("load", function () {
         fd.left = 0
         fd.width = width
         fd.height = height
+        fd.simScale = Math.min(1.0, maxSimDim / baseDim)
     }
 
     function shoot(pid) {
