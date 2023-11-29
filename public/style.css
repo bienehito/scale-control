@@ -11,7 +11,7 @@ body {
     left: 0;
     top: 0;
     width: 100%;
-    height: 100vh;
+    height: 100%;
 }
 
 #canvas2d {
@@ -30,9 +30,13 @@ body {
     display: none;
 }
 
+#help.mobile .desktop, #help.desktop .mobile {
+    display: none;
+}
+
 .popup {
     margin: 20px;
-    max-height: 90vh;
+    max-height: 90%;
     overflow-y: auto;
 
     background: #222;

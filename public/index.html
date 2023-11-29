@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Scale Control</title>
   <link rel="stylesheet" href="style.css" />
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-6XSDE5D02Z"></script>
@@ -22,13 +22,13 @@
   <div id="help" class="hidden">
     <div class="popup">
       <h1>Scale Control: A Liquid Experience</h1>
-      <div><b>Goal:</b> push the white ball into your opponent's gate.</div>
+      <div><b>Goal:</b> push the white ball into your opponent's gate using jets.</div>
       <div><b>Ball scales:</b> ball grows when it hits the ceiling and shrinks when it hits the floor.</div>
       <div><b>Power-ups:</b> push power-up in your opponent's gate to activate:
         <li><div><span class="plus powerup">+</span></div> makes your jet stronger and your gate wider</li>
         <li><div><span class="minus powerup">-</span></div> makes your jet weaker and your gate smaller</li>
       </div>
-      <div><b>Keys:</b>
+      <div class="desktop"><b>Keys:</b>
         <li><span class="key">Esc</span> this screen</li>
         <li><span class="key">A</span> <span class="key">W</span> <span class="key">D</span> blue player controls</li>
         <li><span class="key">←</span> <span class="key">↑</span> <span class="key">→</span> red player controls</li>
@@ -36,7 +36,8 @@
         <li><span class="key">P</span> pause/unpause game</li>
         <li><span class="key">V</span> cycle through different views</li>
       </div>
-      <button>Close</button>
+      <div class="mobile"><b>Controls:</b> tap and hold on your side of the screen to activate your jet</div>
+      <button><span class="desktop">[Esc]</span> Close</button>
     </div>
   </div>
 </body>

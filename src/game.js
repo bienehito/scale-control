@@ -18,7 +18,8 @@ window.addEventListener("load", function () {
             postRender: update,
         }),
         helpEl = document.getElementById("help"),
-        ui = ui_(ctx)
+        ui = ui_(ctx),
+        isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0)
 
     // Game constants.
     const weaponLength = 0.02,
@@ -35,13 +36,13 @@ window.addEventListener("load", function () {
         gateHeight = 0.25,
         gateScaleStep = 2,
         startBallRadius = 0.03,
-        maxBallScale = 5,
+        maxBallScale = 3,
         ballScaleStepUp = 1.1,
-        ballScaleStepDown = 2,
+        ballScaleStepDown = 1.73,
         startBallPosition = [0.5, 0.25],
         startBallVelocity = [0, 0.20],
         numPowerUps = 2,
-        powerUpRadius = 10,
+        powerUpRadius = 0.01,
         powerUpColors = ["#ff4", "#4f4"],
         powerUpLabels = ["+", "-"],
         powerUpLabelColor = "#222",
@@ -88,7 +89,7 @@ window.addEventListener("load", function () {
     function resizeCanvas() {
         width = canvas3d.scrollWidth
         height = canvas3d.scrollHeight
-        baseDim = width
+        baseDim = Math.max(width, height)
         canvas3d.width = width
         canvas3d.height = height
         canvas2d.width = width
@@ -99,7 +100,7 @@ window.addEventListener("load", function () {
         fd.height = height
     }
 
-    async function shoot(pid) {
+    function shoot(pid) {
         const player = players[pid],
             cos = Math.cos(player.angle),
             sin = Math.sin(player.angle),
@@ -115,6 +116,12 @@ window.addEventListener("load", function () {
 
     function stopShooting(pid) {
         players[pid].shootSfx.stop(0.5)
+    }
+
+    function shootAt(pid, x, y) {
+        const player = players[pid]
+        player.angle = Math.atan2(y - player.y * height, x - player.x * width)
+        shoot(pid)
     }
 
     function turn(pid, dir) {
@@ -154,7 +161,7 @@ window.addEventListener("load", function () {
                 ctx.textBaseline = "middle"
                 ctx.fillStyle = ball.textStyle
                 ctx.font = "bold " + ball.radius * 2 + "px Verdana"
-                ctx.fillText(ball.text, ball.position[0], height - ball.position[1])
+                ctx.fillText(ball.text, ball.position[0], height - ball.position[1] + 1)
             }
         }
     }
@@ -174,13 +181,8 @@ window.addEventListener("load", function () {
             font: () => titleFontSize() * 0.8 + "px Verdana",
             color: [200, 200, 100]
         }],
-        instructionNotes = [-1, 1].map(i => ({
-            text: i < 0 ? "A W D" : "← ↑ →",
-            pos: () => [(0.5 + i * 0.3) * width, 0.8 * height],
-            color: i < 0 ? [100, 100, 255] : [255, 100, 100]
-        })),
         anyKeyNote = {
-            text: "press any key",
+            text: isMobile ? "tap to continue" : "press any key",
             pos: () => [width / 2, height * 0.9],
             color: [255, 255, 255]
         },
@@ -203,7 +205,14 @@ window.addEventListener("load", function () {
             color: i < 0 ? [0, 0, 255] : [255, 0, 0],
             lineWidth: 2,
             strokeColor: [255, 255, 255]
-        }))
+        })),
+        fpsNote = {
+            pos: () => [width * 0.01, height * 0.01],
+            color: [150, 150, 150],
+            font: () => "14px Verdana",
+            align: "left",
+            baseline: "top"
+        }
 
 
     // Gate
@@ -291,10 +300,6 @@ window.addEventListener("load", function () {
         for (let i = 0; i < 2; i++)
             ui.hideNote(playerScoreNotes[i])
         ui.hideNote(playerScoreDividerNote)
-        // Show instruction notes if didn't show them before.
-        for (let i = 0; i < 2; i++)
-            if (instructionNotes[i].transparency == undefined)
-                ui.showNote(instructionNotes[i])
         // Set up players
         for (let i = 0; i < 2; i++) {
             // Reset power levels.
@@ -314,7 +319,7 @@ window.addEventListener("load", function () {
             fd.solids.push({
                 position: [width * Math.random(), height * Math.random()],
                 velocity: [0, 0],
-                radius: powerUpRadius,
+                radius: powerUpRadius * baseDim,
                 density: 2,
                 color: powerUpColors[i % 2],
                 text: powerUpLabels[i % 2],
@@ -342,13 +347,14 @@ window.addEventListener("load", function () {
     }
 
     /** FPS counter.*/
-    var fps = 0, frameCounter = 0
+    var frameCounter = 0
     function computeFps() {
-        fps = frameCounter
-        console.log("fps", this.fps)
+        fpsNote.text = frameCounter + "/" + (1 / fd.updateTime).toFixed(2)
+        ui.showNote(fpsNote)
         frameCounter = 0
         window.setTimeout(computeFps, 1000)
     }
+    if (new URLSearchParams(window.location.search).get("fps")) computeFps()
 
     // Main update loop.
     function update(dt) {
@@ -357,10 +363,11 @@ window.addEventListener("load", function () {
         if (keyDown["ArrowLeft"]) turn(1, 1)
         if (keyDown["ArrowRight"]) turn(1, -1)
         if (state == "play") {
-            if (keyDown["KeyW"]) shoot(0)
-            else stopShooting(0)
-            if (keyDown["ArrowUp"]) shoot(1)
-            else stopShooting(1)
+            for (let i = 0; i < 2; i++) {
+                if (keyDown[i == 0 ? "KeyW" : "ArrowUp"]) shoot(i)
+                else if (touches[i]) shootAt(i, touches[i].pageX, height - touches[i].pageY)
+                else stopShooting(i)
+            }
         }
         if (!fd.paused) {
             ballPhysics(dt)
@@ -563,7 +570,7 @@ window.addEventListener("load", function () {
     /** Single key press event handlers. */
     window.addEventListener("keydown", evt => {
         // Cycle renders sources.
-        if (evt.key == "v") {
+        if (evt.code == "KeyV") {
             const sources = ["dye", "velocity", "pressure", "divergence", "curl"]
             fd.renderSource = sources[(sources.indexOf(fd.renderSource) + 1) % sources.length]
             renderSourceNote.text = fd.renderSource
@@ -572,22 +579,14 @@ window.addEventListener("load", function () {
             return
         }
         // Pause/unpause simulation.
-        if (evt.key == "p") {
+        if (evt.code == "KeyP") {
             fd.paused = !fd.paused
             return
         }
         // Show/hide ball.
-        if (evt.key == "b") {
+        if (evt.code == "KeyB") {
             ballsVisible = !ballsVisible
             return
-        }
-
-        if (evt.code == "KeyW") {
-            ui.hideNote(instructionNotes[0])
-        }
-
-        if (evt.code == "ArrowUp") {
-            ui.hideNote(instructionNotes[1])
         }
 
         if (evt.code == "KeyM") {
@@ -598,7 +597,12 @@ window.addEventListener("load", function () {
             toggleHelp()
         }
 
-        // Any key.
+        anyKeyPressed()
+        logActivity()
+    })
+
+    /** Handles "any key" presses and taps. */
+    function anyKeyPressed() {
         if (anyKeyEnabled) {
             anyKeyEnabled = false
             ui.hideNote(anyKeyNote)
@@ -608,18 +612,48 @@ window.addEventListener("load", function () {
                 showHelp()
             }
         }
+    }
 
-        logActivity()
+    /** Touch events */
+    const touches = [null, null] // Current touch object for each player.
+    document.addEventListener("touchstart", (evt) => {
+        for (let touch of evt.changedTouches) {
+            const playerId = touch.pageX < width / 2 ? 0 : 1
+            touches[playerId] = touch
+        }
+        anyKeyPressed()
     })
+
+    document.addEventListener("touchmove", (evt) => {
+        for (let touch of evt.changedTouches) {
+            for (var i = 0; i < 2; i++) {
+                if (touches[i] && touches[i].identifier == touch.identifier)
+                    touches[i] = touch
+            }
+        }
+    })
+
+    function onTouchEnd(evt) {
+        for (let touch of evt.changedTouches) {
+            for (var i = 0; i < 2; i++) {
+                if (touches[i] && touches[i].identifier == touch.identifier) {
+                    touches[i] = null
+                    if (state == "play") stopShooting(i)
+                }
+            }
+        }
+    }
+    document.addEventListener("touchend", onTouchEnd)
+    document.addEventListener("touchcancel", onTouchEnd)
 
 
     /** Show/hide help screen. */
+    helpEl.classList.add(isMobile ? "mobile" : "desktop")
     helpEl.getElementsByTagName("button")[0].addEventListener("click", hideHelp)
 
     function showHelp() {
         helpEl.classList.remove("hidden")
         fd.paused = true
-
     }
 
     function hideHelp() {

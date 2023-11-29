@@ -16,7 +16,7 @@ export default function ui(ctx) {
                 const note = notes[i]
                 ctx.font = note.font && note.font() || defaultFont(width, height)
                 ctx.textAlign = note.align || "center"
-                ctx.textBaseline = "alphabetic"
+                ctx.textBaseline = note.baseline || "alphabetic"
                 const c = note.color || [255, 255, 255]
                 ctx.fillStyle = `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${note.transparency})`
                 const [x, y] = note.pos(width, height)
