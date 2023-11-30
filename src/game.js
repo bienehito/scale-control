@@ -23,7 +23,7 @@ window.addEventListener("load", function () {
         isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0)
 
     // Game constants.
-    const 
+    const
         maxSimDim = 1000,
         weaponLength = 0.02,
         weaponColor = "white",
@@ -536,7 +536,8 @@ window.addEventListener("load", function () {
             const gate = scoringGate(ball)
             if (gate == 0) continue
             powerUp((1 - gate) / 2, ball.text == "+" ? 1 : -1)
-            // Rewpawn power up avoiding the main ball.
+            // Rewpawn power up while avoiding the main ball.
+            ball.velocity = [0, 0]
             do { ball.position = [width * Math.random(), height * Math.random()] }
             while (vecLen(vecMinus(ball.position, mainBall.position)) < mainBall.radius + ball.radius)
         }
