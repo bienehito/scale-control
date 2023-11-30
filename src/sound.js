@@ -75,7 +75,7 @@ export function playMusic() {
 
 const soundEffects = {
     score: { src: "Ship Bell.mp3" },
-    shoot: { src: "Water Leak.mp3", loop: true, gain: 0.9, },
+    shoot: { src: "Small Stream Flowing.mp3", loop: true, gain: 0.7, },
     ballScale: { src: "440Hz beep.mp3" },
     powerUp: { src: "Bubble up.mp3" },
     powerDown: { src: "Bubble down.mp3" },
