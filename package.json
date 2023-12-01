@@ -19,7 +19,7 @@
     },
     "homepage": "https://github.com/bienehito/scale-control#readme",
     "dependencies": {
-        "@bienehito/fluid-dynamics": "^1.0.0"
+        "@bienehito/fluid-dynamics": "^1.1.0"
     },
     "devDependencies": {
         "copy-webpack-plugin": "^11.0.0",
