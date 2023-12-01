@@ -223,65 +223,56 @@ window.addEventListener("load", function () {
     const vao = webGlUtils.vertexArrayObject2D(gl, [-1, -1, -1, 1, 1, 1, 1, -1], [0, 1, 2, 0, 2, 3])
     const programs = webGlUtils.compilePrograms(gl, {
         gate: [vertexShaderCode, gateShaderCode],
-    })
-    const gatePhases = [0, 0, 0], gatePhaseDeltas = [0.02, -0.04, 0.06]
-    var minGateWidth = 0
+    }),
+        senseX = 0.3, // x of a ball at which gate alpha starts increase.
+        maxBallGateAlpha = 1.0, // gate alpha when ball is at x 0.
+        maxPowerUpGateAlpha = 0.5, // gate alpha when power-up is at x 0.
+        minGateAlpha = 0.2, // minimum alpha for the gates.
+        minGateAlphas = [minGateAlpha, minGateAlpha]
+    var gateTime = 0
 
-    function animateGate() {
-        for (let i = 0; i < 3; i++) {
-            gatePhases[i] += gatePhaseDeltas[i];
-        }
+    function animateGate(dt) {
+        gateTime += dt
     }
 
-    function drawGate() {
+    function drawGates() {
         if (!ball.position) return
-        const theBall = ball,
-            senseX = 0.3, // x of a ball at which gate starts to show.
-            powerUpWidth = 0.3 // power ups have a smaller gate width.
-        for (let left of [true, false]) {
-            // Width: 0 when ball is at senseX, 1 or powerUpWidth when ball is at 0.
-            var gateWidth = minGateWidth
+        const theBall = ball
+        // Calculate gates' color and transparency.
+        const gateAlphas = [], gateColors = []
+        for (var i = 0; i < 2; i++) {
+            // Gate alpha: minGateAlpha when ball is at >= senseX, maxBallGateAlpha/maxPowerUpGateAlpha when ball is at 0.
+            var gateAlpha = minGateAlphas[i]
             // Color: 1 when ball is at >= 0, 0 when ball is at -radius.
             var gateColor = 1
             for (let ball of fd.solids) {
                 const isMain = ball == theBall,
-                    x = (left ? ball.position[0] : width - ball.position[0]) / width
-                gateWidth = Math.max(gateWidth,
-                    Math.min(1, 1 - x / senseX) * (isMain ? 1 : powerUpWidth))
+                    x = (i == 0 ? ball.position[0] : width - ball.position[0]) / width
+                gateAlpha = Math.max(gateAlpha,
+                    Math.min(1, 1 - x / senseX) * (isMain ? maxBallGateAlpha : maxPowerUpGateAlpha))
                 gateColor = Math.min(gateColor,
                     1 - Math.max(0, -x / (ball.radius / width)))
             }
-            if (!gateWidth) continue
-            // Draw gate.
-            programs.gate.use({
-                anglePoint: [left ? -1 : 2, 0.5],
-                distPoint: [left ? 0 : 1, 0.5],
-                amplitude: [0.2 * gateWidth, 0.2 * gateWidth, 0.1 * gateWidth],
-                frequency: [20, 55, 107],
-                base: [2.5, 0, 0],
-                maxAngle: 0.29,
-                color: [left ? 0.8 : gateColor, gateColor, left ? gateColor : 0.8],
-                phase: gatePhases,
-            })
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-            const [gateBottom, gateHeight] = gatePos(left ? 0 : 1),
-                s = 0.4 // Extra height for rays that go outside of the gate.
-            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-            gl.enable(gl.BLEND);
-            gl.viewport(left ? 0 : width - width * 0.1,
-                height * (gateBottom - gateHeight * s),
-                width * 0.1,
-                height * gateHeight * (1 + 2 * s));
-            gl.bindVertexArray(vao)
-            gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0)
-
-            // ctx.beginPath();
-            // ctx.moveTo(0, height * (1 - gateBottom))
-            // ctx.lineTo(0, height * (1 - gateBottom - gateHeight))
-            // ctx.lineWidth = 10
-            // ctx.strokeStyle = "red"
-            // ctx.stroke()
+            gateAlphas[i] = gateAlpha
+            gateColors[i] = [i == 0 ? 1 : gateColor, gateColor, i == 0 ? gateColor : 1]
         }
+
+        // Draw gates.
+        programs.gate.use({
+            time: gateTime,
+            leftGatePos: gatePos(0),
+            rightGatePos: gatePos(1),
+            leftAlpha: gateAlphas[0],
+            rightAlpha: gateAlphas[1],
+            leftColor: gateColors[0],
+            rightColor: gateColors[1],
+        })
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+        gl.enable(gl.BLEND)
+        gl.viewport(0, 0, width, height)
+        gl.bindVertexArray(vao)
+        gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0)
     }
 
 
@@ -379,7 +370,7 @@ window.addEventListener("load", function () {
             powerUpCheck()
             powerUpUpdate(dt)
         }
-        animateGate()
+        animateGate(dt)
         render()
         frameCounter += 1
     }
@@ -482,6 +473,7 @@ window.addEventListener("load", function () {
         }
     }
 
+    /** Returns player i's gate bottom and height adjusted for power level. */
     function gatePos(i) {
         const height = gateHeight * Math.pow(gateScaleStep, players[i].powerLevel)
         return [gateBottom + gateHeight / 2 - height / 2, height]
@@ -518,13 +510,16 @@ window.addEventListener("load", function () {
 
     /** Smoothly updates player powerLevels.*/
     function powerUpUpdate(dt) {
-        for (let player of players) {
+        for (let i = 0; i < 2; i++) {
+            const player = players[i]
             if (player.powerUpDuration > 0)
                 player.powerUpDuration -= dt
             else
                 player.newPowerLevel = 0
-            if (player.powerLevel != player.newPowerLevel)
+            if (Math.abs(player.powerLevel - player.newPowerLevel) > 0.001) {
                 player.powerLevel += Math.sign(player.newPowerLevel - player.powerLevel) * dt / powerUpTransition
+                minGateAlphas[i] = minGateAlpha * Math.pow(2, player.powerLevel)
+            }
         }
     }
 
@@ -551,7 +546,7 @@ window.addEventListener("load", function () {
         if (state != "title") {
             drawWeapon(0)
             drawWeapon(1)
-            drawGate()
+            drawGates()
         }
         ui.drawNotes()
     }
