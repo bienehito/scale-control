@@ -50,4 +50,6 @@ Game uses music and sound effects from the following sources:
   * Small Stream Flowing
 * Ascending Bubbles Accent from https://freesfx.co.uk/sfx/
 
+Code references:
+* [Light rays shader](https://www.shadertoy.com/view/lljGDt) by ElusivePete
 
